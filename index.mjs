@@ -26,7 +26,7 @@ wechaty
         if (message.type() !== 7) {
           message.say(config.ERROR);
         } else {
-          const response = await fetch(`http://localhost:3000/chatgpt?question=${text}`);
+          const response = await fetch(`${config.HOST}/chatgpt?question=${text}`);
           const result = await response.json();
           let answer = result.status === 400 ? "无法获取答案🥹!" : result.data.text;
           try {
