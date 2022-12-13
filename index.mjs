@@ -1,22 +1,13 @@
-import { ChatGPTAPI } from 'chatgpt';
-import config from './config.js';
-import { WechatyBuilder } from 'wechaty'
-
-let conversation = null;
-const TIMEOUT = 2 * 60 * 1000;
+import config from './config.mjs';
+import fetch from 'node-fetch';
+import { WechatyBuilder } from 'wechaty';
+const wechaty = WechatyBuilder.build();
 const person = new Set();
 
-async function init() {
-  const api = new ChatGPTAPI({ sessionToken: config.TOKEN });
-  await api.ensureAuth();
-  conversation = api.getConversation();
-}
-// 初始化 ChatGPT 机器人
-await init();
-
-const wechaty = WechatyBuilder.build()
 wechaty
-  .on('scan', (qrcode, status) => console.log(`Scan QR Code to login: ${status}\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(qrcode)}`))
+  .on('scan', qrcode => {
+    console.log(`Scan QR Code to login!\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(qrcode)}`)
+  })
   .on('login', user => console.log(`User ${user} logged in`))
   .on('message', async message => {
     const text = message.text();
@@ -28,18 +19,20 @@ wechaty
     if (ifMention || !ifInRoom) {
       if (!message.self() && !person.has(id)) {
         person.add(id);
-        message.say(config.HELLO);
+        message.say(`你好👋，${talker.name()}！${config.HELLO}`);
       }
       console.log(`Message: ${talker} ${text}`);
       if (text !== "") {
         if (message.type() !== 7) {
           message.say(config.ERROR);
         } else {
-          const response = await conversation.sendMessage(text, { timeoutMs: TIMEOUT });
+          const response = await fetch(`http://localhost:3000/chatgpt?question=${text}`);
+          const result = await response.json();
+          let answer = result.status === 400 ? "无法获取答案🥹!" : result.data.text;
           try {
-            if (ifInRoom) ifInRoom.say(response, talker);
-            else message.say(response);
-            console.log(`Message: <ChatGPT-AI> ${response}`);
+            if (ifInRoom) ifInRoom.say(answer, talker);
+            else message.say(answer);
+            console.log(`Message: <ChatGPT-AI> ${answer}`);
           } catch (e) {
             console.log("发送失败！");
           }
