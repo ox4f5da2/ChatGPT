@@ -6,7 +6,7 @@ const ERROR = "目前不支持回复除文本消息之外的内容🥹"; // 当�
 
 const NAME = "快乐的 AI (*^ω^*)"; // 你自己机器人的名字
 
-const HOST = ""; // 部署服务器的域名或 IP 地址
+const HOST = ""; // 部署服务器的域名或 IP 地址和端口号，如 http://1.2.3.4:8000
 
 const config = {
   HELLO,

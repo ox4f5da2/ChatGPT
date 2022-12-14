@@ -5,7 +5,7 @@ const app = express();
 
 // 初始化 chatgpt 接口
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY, // 环境变量
+  apiKey: "你自己的 API key", // 官网获取
 });
 
 const openai = new OpenAIApi(configuration);
@@ -14,7 +14,7 @@ app.get('/chatgpt', async (req, res) => {
   const question = req.query.question;
   if (!question) {
     res.send({
-      message: "The query must contain the query parameter!",
+      message: "The query must contain the question parameter!",
       status: 400
     })
   } else {
