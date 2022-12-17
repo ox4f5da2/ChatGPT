@@ -15,6 +15,7 @@ wechaty
     const id = talker.id;
     const ifInRoom = message.room();
     const ifMention = ifInRoom && text.startsWith(`@${config.NAME}`);
+    if (config.BLACKLIST.includes(talker.name()) || message.self()) return;
     // 表示正在群聊中
     if (ifMention || !ifInRoom) {
       if (!message.self() && !person.has(id)) {

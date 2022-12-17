@@ -8,12 +8,15 @@ const NAME = "快乐的 AI (*^ω^*)"; // 你自己机器人的名字
 
 const HOST = ""; // 部署服务器的域名或 IP 地址和端口号，如 http://1.2.3.4:8000
 
+const BLACKLIST = []; // 用户黑名单(用户名)，如果收到这个用户的信息则不会发送
+
 const config = {
   HELLO,
   INTRO,
   ERROR,
   NAME,
-  HOST
+  HOST,
+  BLACKLIST
 }
 
 export default config;
