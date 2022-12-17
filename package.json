@@ -1,5 +1,5 @@
 {
-  "name": "chatgpt",
+  "name": "wechatplatform",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,16 +7,13 @@
     "start": "node index.js"
   },
   "keywords": [
-    "chatgpt",
-    "wechat"
+    "微信公众平台",
+    "自动回复"
   ],
-  "author": "karl_fang",
+  "author": "karl fang",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^3.3.0",
-    "openai": "^3.1.0",
-    "qrcode-terminal": "^0.12.0",
-    "wechaty": "^1.20.2"
+    "sha1": "^1.1.1"
   }
 }

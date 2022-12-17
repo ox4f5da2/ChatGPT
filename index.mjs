@@ -1,59 +1,31 @@
-import config from './config.mjs';
-import fetch from 'node-fetch';
-import { WechatyBuilder } from 'wechaty';
-const wechaty = WechatyBuilder.build();
-const person = new Set();
+const express = require('express');
+const sha1 = require('sha1');
+const app = express();
 
-wechaty
-  .on('scan', qrcode => {
-    console.log(`Scan QR Code to login!\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(qrcode)}`)
-  })
-  .on('login', user => console.log(`User ${user} logged in`))
-  .on('message', async message => {
-    const text = message.text();
-    const talker = message.talker();
-    const id = talker.id;
-    const ifInRoom = message.room();
-    const ifMention = ifInRoom && text.startsWith(`@${config.NAME}`);
-    if (config.BLACKLIST.includes(talker.name()) || message.self()) return;
-    // 表示正在群聊中
-    if (ifMention || !ifInRoom) {
-      if (!message.self() && !person.has(id)) {
-        person.add(id);
-        message.say(`你好👋，${talker.name()}！${config.HELLO}`);
-      }
-      console.log(`Message: ${talker} ${text}`);
-      if (text !== "") {
-        if (message.type() !== 7) {
-          message.say(config.ERROR);
-        } else {
-          const response = await fetch(`${config.HOST}/chatgpt?question=${text}`);
-          const result = await response.json();
-          let answer = result.status === 400 ? "无法获取答案🥹!" : result.data.text;
-          try {
-            if (ifInRoom) ifInRoom.say(answer, talker);
-            else message.say(answer);
-            console.log(`Message: <ChatGPT-AI> ${answer}`);
-          } catch (e) {
-            console.log("发送失败！");
-          }
-        }
-      }
-    }
-  })
-  .on('friendship', async friendship => {
-    try {
-      console.log(`received friend event.`)
-      try {
-        console.log(`received friend event from ${friendship.contact().name()}`)
-        if (friendship.type() === 2 && friendship.hello() === config.INTRO) {
-          await friendship.accept();
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  })
-  .start();
+const TOKEN = 'karlfang666'; // 你自己的token
+
+app.use(express.json())
+
+app.post('/', async (req, res) => {
+  console.log('消息推送', req.body)
+  res.send('success') // 不进行任何回复，直接返回success，告知微信服务器已经正常收到。
+});
+
+app.get('/', async (req, res) => {
+  console.log('消息推送', req.query)
+  const { signature, timestamp, nonce, echostr } = req.query;
+  // 先将 timestamp, nonce, TOKEN 按字典排序并组合成一个字符串
+  const plainText = [timestamp, nonce, TOKEN].sort().join('');
+  // 然后对得到的字符串进行 sha1 加密
+  const CipherText = sha1(plainText);
+  // 最后将加密得到的字符串与 signature 进行对比，如果相同则验证通过
+  if (signature === CipherText) {
+    res.send(echostr);
+  } else {
+    res.end('error');
+  }
+});
+
+app.listen(80, function(){
+  console.log('服务启动成功！')
+})
