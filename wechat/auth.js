@@ -1,7 +1,14 @@
+const { Configuration, OpenAIApi } = require("openai");
 const sha1 = require('sha1');
-const { TOKEN } = require('../config.js');
+const { TOKEN, APIKEY } = require('../config.js');
 const { getUserDataAsync, parseXMLAsync, formatMessage } = require('./utils.js');
 const template = require('./template.js');
+
+const configuration = new Configuration({
+  apiKey: APIKEY, 
+});
+
+const openai = new OpenAIApi(configuration);
 
 module.exports = () => {
   return async (req, res) => {
@@ -12,8 +19,7 @@ module.exports = () => {
    * 3.最后将加密得到的字符串与 signature 进行对比，如果相同则验证通过
    */
     const { query, method } = req;
-    console.log('消息推送', query)
-    const { signature, timestamp, nonce, echostr } = req.query;
+    const { signature, timestamp, nonce, echostr } = query;
     const sha1str = sha1([timestamp, nonce, TOKEN].sort().join(''));
     if (method === 'GET') {
       // GET 请求验证服务器有效性
@@ -26,27 +32,34 @@ module.exports = () => {
       // 微信服务器发送消息
       if (signature !== sha1str) res.end('error');
       // req.query中的openid为用户的id
-      console.log(req.query);
       const xmlData = await getUserDataAsync(req); // 获取xml数据
       const jsData = await parseXMLAsync(xmlData); // 将xml转化为js对象
       const message = formatMessage(jsData); // 格式化xml对象
-      console.log(message);
       const options = {
         type: 'text',
         to: message.FromUserName,
-        from: message.toUserName
+        from: message.ToUserName
       }
       options.msg = '不支持回复该类型的消息🥹！'
       // 回复文本消息，message.Content为内容
       const MsgType = message.MsgType;
       if (MsgType === 'text') {
-        options.msg = 'AI' + message.Content;
+        const result = await openai.createCompletion({
+          model: "text-davinci-003", // 接口类型
+          prompt: question,
+          max_tokens: 3000, // 结果的长度
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0.6,
+        });
+        const answer = result.data.choices[0].text.replaceAll("\n", "");
+        options.msg = answer;
       } else if (MsgType === 'event') {
         if (message.Event === 'subscribe') {
           options.msg = `欢迎关注 Pitaya Hut 公众号 ，可以搜索同名小程序进行访问
-        1. 使用 javascript 刷 leetcode 算法题项目的 GitHub 地址：https://github.com/ox4f5da2/leetcode；
-        2. 前端文档笔记：https://ox4f5da2.github.io/plugin/；
-        3. CSDN 账号：https://blog.csdn.net/ox4f5da2（不定时写个文章吧）。`;
+          1. 使用 javascript 刷 leetcode 算法题项目的 GitHub 地址：https://github.com/ox4f5da2/leetcode；
+          2. 前端文档笔记：https://ox4f5da2.github.io/plugin/；
+          3. CSDN 账号：https://blog.csdn.net/ox4f5da2（不定时写个文章吧）。`;
         }
       }
       /**

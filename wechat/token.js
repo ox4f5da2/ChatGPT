@@ -1,3 +1,6 @@
+/**
+ * 如果想调用微信服务接口，用这个写好的类即可
+ */
 const { APPID, SECRET } = require('../config.js');
 const rp = require('request-promise-native');
 

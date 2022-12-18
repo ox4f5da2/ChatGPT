@@ -8,9 +8,7 @@ module.exports = options => {
     <ToUserName><![CDATA[${options.to}]]></ToUserName>
     <FromUserName><![CDATA[${options.from}]]></FromUserName>
     <CreateTime>${Date.now()}</CreateTime>
-    <MsgType><![CDATA[${type}]]></MsgType>
-    
-  </xml>`
+    <MsgType><![CDATA[${type}]]></MsgType>`;
   if (type === 'text') {
     template += `<Content><![CDATA[${options.msg}]]></Content>`;
   }
@@ -29,7 +27,7 @@ module.exports = options => {
       <MediaId><![CDATA[${options.mediaId}]]></MediaId>
       <Title><![CDATA[${options.title}]]></Title>
       <Description><![CDATA[${options.description}]]></Description>
-    </Video>`
+    </Video>`;
   }
   else if (type === 'music') {
     template += `<Music>
@@ -38,7 +36,7 @@ module.exports = options => {
       <MusicUrl><![CDATA[${options.music_url}]]></MusicUrl>
       <HQMusicUrl><![CDATA[${options.hq_music_url}]]></HQMusicUrl>
       <ThumbMediaId><![CDATA[${options.mediaId}]]></ThumbMediaId>
-    </Music>`
+    </Music>`;
   }
   else if (type === 'news') {
     template += `<ArticleCount>1</ArticleCount>
@@ -49,7 +47,7 @@ module.exports = options => {
         <PicUrl><![CDATA[${options.pic_url}]]></PicUrl>
         <Url><![CDATA[${options.url}]]></Url>
       </item>
-    </Articles>`
+    </Articles>`;
   }
   return template + '</xml>';
 }
