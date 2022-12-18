@@ -1,14 +1,8 @@
-const { Configuration, OpenAIApi } = require("openai");
 const sha1 = require('sha1');
-const { TOKEN, APIKEY } = require('../config.js');
+const { TOKEN } = require('../config.js');
 const { getUserDataAsync, parseXMLAsync, formatMessage } = require('./utils.js');
 const template = require('./template.js');
-
-const configuration = new Configuration({
-  apiKey: APIKEY, 
-});
-
-const openai = new OpenAIApi(configuration);
+const getChatAI = require('./request.js');
 
 module.exports = () => {
   return async (req, res) => {
@@ -44,22 +38,11 @@ module.exports = () => {
       // 回复文本消息，message.Content为内容
       const MsgType = message.MsgType;
       if (MsgType === 'text') {
-        const result = await openai.createCompletion({
-          model: "text-davinci-003", // 接口类型
-          prompt: question,
-          max_tokens: 3000, // 结果的长度
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0.6,
-        });
-        const answer = result.data.choices[0].text.replaceAll("\n", "");
+        const answer = await getChatAI({ msg: message.Content });
         options.msg = answer;
       } else if (MsgType === 'event') {
         if (message.Event === 'subscribe') {
-          options.msg = `欢迎关注 Pitaya Hut 公众号 ，可以搜索同名小程序进行访问
-          1. 使用 javascript 刷 leetcode 算法题项目的 GitHub 地址：https://github.com/ox4f5da2/leetcode；
-          2. 前端文档笔记：https://ox4f5da2.github.io/plugin/；
-          3. CSDN 账号：https://blog.csdn.net/ox4f5da2（不定时写个文章吧）。`;
+          options.msg = `欢迎关注 Pitaya Hut 公众号 ，可以搜索同名小程序进行访问:\n1. 使用 javascript 刷 leetcode 算法题项目的 GitHub 地址：https://github.com/ox4f5da2/leetcode；\n2. 前端文档笔记：https://ox4f5da2.github.io/plugin/；\n3. CSDN 账号：https://blog.csdn.net/ox4f5da2（不定时写个文章吧）。`;
         }
       }
       /**
